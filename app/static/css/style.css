@@ -1,0 +1,135 @@
+
+.floatright{
+position: relative; 
+text-align: center;
+bottom:-250;
+width:100%;
+height:50px;
+ }
+ 
+.inline{
+display: inline;
+padding-left: 10px;
+
+ }
+
+.maincont{
+margin-top: 50px;
+ }
+
+.btn{
+	text-align: left;
+ }
+img{
+	width:35px;
+	height: 35px;
+ }
+
+.text-right {
+    top:10px;
+ }
+
+.sortby{
+margin-top: 20px;
+margin-bottom: 20px;
+padding-right: 30px;
+ }
+
+
+.jumbotron{
+  
+margin-top: 50px;
+
+}
+
+ div.col-md-10{
+ 	margin-bottom: 50px;
+ }
+
+ a{
+ 	text-decoration: none; 
+ }
+
+.container { 
+
+	width: 100%; 
+}
+.text-left{
+
+    text-align: left;
+    width:1000px;
+    height:480px;
+	background-color:white; 
+}
+.row{
+	padding-top: 10px;
+	margin-left: 20px;
+	
+}
+
+.nounderline{
+	text-decoration: none
+}
+
+
+.pager{
+position: absolute;
+right:150px;
+bottom: 10px;
+}
+
+#form{
+padding-top: 30px;
+margin-left: 20px;	
+}
+
+.text{
+	margin-top: 10px;
+}
+
+#social{
+margin-top: 7px;
+}
+
+.twitter,.facebook{
+	
+	text-decoration: none;
+}
+
+#profile{
+	padding-top: 10px;
+}
+
+#del-button{
+	text-decoration: none;
+}
+
+.table-borderless{
+	width:500px;
+}
+
+.table-borderless tr{
+    border-style: hidden;
+}
+.panel {
+	position: absolute;
+	top:100px;
+	width:100%;
+	background:#eaeaea;
+
+}
+.spanFormat{
+
+    padding-top: 10px;
+	display: table-cell;
+    padding-left:30px; 
+	padding-right:10px; 
+}
+.spanFormat1{
+
+     padding-top: 10px;
+	 display: table-cell;
+}
+
+
+

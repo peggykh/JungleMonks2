@@ -1,0 +1,191 @@
+#!flask/bin/python
+from flask import render_template, flash, redirect, session, url_for, request, g
+from flask.ext.login import login_user, logout_user, current_user, login_required
+from app import app, db, lm
+from config import Config
+from ..form import LoginForm
+from flask.ext.sqlalchemy import Pagination
+from config import MONKEYS_PAGE
+from ..model import Users
+from . import layout
+from sqlalchemy import func
+
+@lm.user_loader
+def load_user(id):
+    return Users.query.get(int(id))
+
+@layout.route('/')
+def home():
+   return render_template('index.html')
+
+@layout.route('/user/<int:page>', methods = ['GET', 'POST'])
+def user(page=1, sort='normal'):
+    id_monkey = request.args.get("id", type=int)
+    m_user = User.query.filter(User.id == id_monkey).first()
+    #condition to sort base on ascending
+    if request.args.get('sort') =='asc':
+            sortBy = 'asc'
+            monkey = Users.query.order_by(Users.name.asc()).paginate(page, MONKEYS_PAGE, False)
+
+    elif request.args.get('sort')== 'friendnum':
+    	     sortBy =  'friendnum'
+    	     #friends are users as well, so need alias
+    	     friend = db.aliased(User)
+    	     #construct subquery for use in final query
+    	     sub = db.session.query(
+    	      	     User.id, db.func.count(friend.id).label('fn')).\
+    	             join(friend, User.friends).group_by(User.id).subquery()
+
+    	     monkey = User.query.join(sub, sub.c.id == User.id).\
+                       order_by(sub.c.fn.desc()).paginate(page, MONKEYS_PAGE, False)
+
+     #condition to sort base on bestfriend name                  
+    elif request.args.get('sort') == 'bf':
+           sortBy = 'bf'
+           friend = db.aliased(User)
+           sub = db.session.query(
+                   User.name, friend.name.label('fn')).\
+                   join(friend, User.is_bestfriend).group_by(User.name).subquery()
+
+           monkey = User.query.join(sub, sub.c.name == User.name).\
+                        order_by(sub.c.fn.asc()).paginate(page, MONKEYS_PAGE, False)
+    #condition to sort base on normal  
+    else:
+    	     sortBy = 'normal'
+    	     monkey = Users.query.paginate(page, MONKEYS_PAGE, False)
+        
+    return render_template('Users.html',
+    	    user = user,
+            title ='Home',
+            monkey = monkey,
+            sortBy = sortBy,
+            id_monkey = id_monkey,
+            m_user = m_user
+            )
+
+
+
+@layout.route('/new', methods=['GET', 'POST'])
+def new():
+  form = LoginForm(request.form)
+  if request.method == 'POST':
+     if form.validate()== True:
+      contact = Users(form.name.data,
+                 form.email.data,
+                 form.age.data
+                          )
+      db.session.add(contact)
+      db.session.commit()
+      return redirect(url_for('layout.user',page=1,sortby='normal'))
+      
+     else: #If the form does not have all fields that are required 
+            flash('All fields are required.')
+  return render_template('new.html', form=form)
+     
+
+#Edit monkey information
+@layout.route('/edit/<int:id>', methods=['POST'])
+def edit(id=None):
+  user = Users.query.get_or_404(id)
+  form = LoginForm(obj=user)
+  if request.method=='POST':
+      if form.validate_on_submit()== True:
+         form.populate_obj(user)
+         db.session.commit()
+         flash('changes done.')
+         return redirect(url_for('layout.user',page=1,sortby='normal'))
+
+      else: #If the form does not have all fields that are required 
+            return render_template('edit.html', form=form, id=id )
+
+# delete the monkey 
+@layout.route('/delete/<int:id>')
+@login_required
+def delete(id):
+  user = Users.query.get_or_404(id)
+  if g.user.id == user.id:
+  	       flash('You are not allow to delete yourself.')
+  	       
+  else:
+      db.session.delete(user)
+      db.session.commit()
+      flash('delete done.')
+  return redirect(url_for('user',id=id, page=1,sortby='normal'))
+
+# show profileof each monkey
+@layout.route('/profile/<int:id>')
+def profile(id):
+  user= Users.query.get(id)
+  return render_template('profile.html', id=id, user= user)
+
+
+# freinds
+@layout.route('/friend/<name>')
+@login_required
+def friend(name):
+    user = User.query.filter_by(name = name).first()
+    if user is None:
+        flash('User %s not found.' % name)
+        return redirect(url_for('user'))
+    if user == g.user:
+        flash('You can\'t Friend yourself!')
+        return redirect(url_for('user',page=1,sortby='normal'))
+    u = g.user.be_friend(user)
+    if u is None:
+        flash('You have been Friend with ' + name + '.')
+        return redirect(url_for('user',page=1,sortby='normal'))
+
+    db.session.add(u)
+    db.session.commit()
+    flash('You are now Friend with ' + name + '!')
+    return redirect(url_for('user', page=1,sortby='normal'))
+
+#unfriend
+@layout.route('/unfriend/<name>')
+@login_required
+def unfriend(name):
+    user = User.query.filter_by(name = name).first()
+    if user is None:
+        flash('User %s not found.' % name)
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t unFriend yourself!')
+        return redirect(url_for('user', page=1,sortby='normal'))
+    u = g.user.unfriend(user)
+    if u is None:
+        flash('Cannot unFriend ' + name + '.')
+        return redirect(url_for('user', page=1,sortby='normal'))
+    
+    db.session.add(u)
+    db.session.commit()
+    flash('You are not Friend with ' + name + '!')
+    return redirect(url_for('user', page=1,sortby='normal'))
+
+#best_freinds
+@layout.route('/bestFriend/<name>')
+@login_required
+def bestFriend(name):
+    user = User.query.filter_by(name = name).first()
+    if user is None:
+        flash('User %s not found.' % name)
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t Best Friend yourself!')
+        return redirect(url_for('user', page=1,sortby='normal'))
+    u = g.user.be_bestfriend(user)
+    if u is None:
+        flash('Cannot be best Friend ' + name + '.')
+        return redirect(url_for('user', page=1,sortby='normal'))
+    db.session.add(u)
+    db.session.commit()
+    flash('You are now BestFriend with ' + name + '!')
+    return redirect(url_for('user', page=1,sortby='normal'))
+
+            
+
+      
+      
+      
+      
+
+

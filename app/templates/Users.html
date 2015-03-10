@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+
+<body>
+    {% extends "base.html" %} {% block content %}
+
+    <div class="text-right sortby">
+        <span>Sort by</span> <a class="btn btn-default btn-xs" href=
+        "{{url_for('layout.user',page='1',sort='asc')}}">
+        <span class="glyphicon glyphicon-sort-by-alphabet"></span> name</a>
+        <a class="btn btn-default btn-xs" href=
+        "{{url_for('layout.user',page='1',sort='friendnum')}}">
+        <span class="glyphicon glyphicon-link"></span> number of friends</a>
+        <a class="btn btn-default btn-xs" href=
+        "{{url_for('layout.user',page='1',sort='bf')}}">
+        <span class="glyphicon glyphicon-link"></span> name of best friends</a>
+    </div>
+
+    <div class="text-left sortby">
+        <div class="row">
+            <div class="col-md-12">
+                {%for user in monkey.items%} <img src=
+                "/static/img/facemonkey.jpg"> <a href=
+                "{{url_for('layout.profile',id=user.id)}}">{{
+                user.name.capitalize()}}</a><br>
+
+                <div class="inline">
+                    <span class="glyphicon glyphicon-star-empty"></span> {{
+                    user.is_friend.count() }} {% if user.is_friend.count() != 0
+                    and user.is_friend.count() != 1 %} Friends {% else %}
+                    Friend {% endif %}
+                </div>&nbsp;
+
+                <div class="inline">
+                    <span class="glyphicon glyphicon-star-empty"></span> {% if
+                    user.is_bestfriend.name %} {{ user.is_bestfriend.name }} is
+                    Best friend {%else%} 0 BestFriend {% endif %}<br>
+                </div><a class="btn" href=
+                "{{url_for('layout.friend',name=user.name)}}"><span class="glyphicon glyphicon-ok"></span>
+                Friend</a><br>
+                <a class="btn" href=
+                "{{url_for('layout.unfriend',name=user.name)}}"
+                onclick=
+                "return confirm('Are you sure you want to unfriend the user?')">
+                <span class="glyphicon glyphicon-remove"></span>
+                UnFriend</a><br>
+                <a class="btn" href=
+                "{{url_for('layout.bestFriend',name=user.name)}}"><span class="glyphicon glyphicon-star-empty">
+                </span> BestFriend</a><br>
+                <br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <ul class="pager">
+            <li style="list-style: none">{% if monkey.has_prev %}</li>
+
+            <li class="navbar-text pull-left">
+                <a href=
+                "{{url_for('layout.user',page=monkey.prev_num,sort=sortBy)}}">
+                &lt;&lt; prev page</a> {%else%} {%endif%}
+            </li>
+
+            <li style="list-style: none">{% if monkey.has_next %}</li>
+
+            <li></li>
+
+            <li class="navbar-text pull-left">
+                <a href=
+                "{{url_for('layout.user',page=monkey.next_num,sort=sortBy)}}">
+                next page &gt;&gt;</a> {%else%} {% endif %}
+            </li>
+        </ul>
+    </div>{% endblock %}
+</body>
+</html>
