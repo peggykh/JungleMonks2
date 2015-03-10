@@ -6,7 +6,7 @@ from flask.ext.script import Manager
 from app import db
 from app.model import Users
 
-app = create_app(os.environ['FLASK_CONFIG'] or 'default')
+app = create_app(os.environ.get('FLASK_CONFIG', 'default'))
 magrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
