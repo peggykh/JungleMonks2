@@ -1,6 +1,6 @@
 #!flask/bin/python
+
 from .import db
-import os
 
 friends = db.Table('friends',
                    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),

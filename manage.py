@@ -4,7 +4,7 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from app import create_app
 from flask.ext.script import Manager
 from app import db
-from app.model import Users
+
 
 app = create_app(os.environ.get('FLASK_CONFIG', 'default'))
 magrate = Migrate(app, db)
