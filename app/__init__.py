@@ -2,8 +2,6 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
-import psycopg2
-from config import basedir
 from config import config
 
 db = SQLAlchemy()
